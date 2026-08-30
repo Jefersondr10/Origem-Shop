@@ -76,7 +76,7 @@ export function InstallmentModal({
 
       {(data?.machines.length || data?.cardBrands.length) ? <div className="installment-selectors">
         {data.machines.length > 1 && <label>Máquina<select value={machineId || ""} onChange={(event) => setMachineId(Number(event.target.value) || null)}>{data.machines.map((machine) => <option key={machine.id} value={machine.id}>{machine.publicName || machine.name}</option>)}</select></label>}
-        {data.cardBrands.length > 1 && <label>Bandeira<select value={brandId || ""} onChange={(event) => setBrandId(Number(event.target.value) || null)}>{data.cardBrands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label>}
+        {data.cardBrands.length > 1 && <label>Bandeira / modalidade<select value={brandId || ""} onChange={(event) => setBrandId(Number(event.target.value) || null)}>{data.cardBrands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label>}
       </div> : null}
 
       {loading && !data && <div className="modal-state"><LoaderCircle className="spin" />Calculando...</div>}
