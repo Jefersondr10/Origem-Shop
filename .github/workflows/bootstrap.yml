@@ -19,14 +19,37 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Reconstruir pacote
+      - name: Validar e reconstruir pacote
         shell: bash
         run: |
           set -euo pipefail
-          for part in bootstrap/archive.part*; do
-            printf '%s: %s bytes\n' "$part" "$(wc -c < "$part")"
-          done
-          cat bootstrap/archive.part* | LC_ALL=C tr -cd 'A-Za-z0-9+/=' > /tmp/origem-shop.tar.gz.b64
+          cat > /tmp/fragmentos.sha256 <<'HASHES'
+          c80a8d9e57364f8a777a35e77bc444bbaddd9d1a7fc7b0997e4f4e755a54b927  bootstrap/archive.part00
+          63e6ce4e1556415e4fde0422e39d783e6ea5e9dd72148a4046ad2e2e2422ab51  bootstrap/archive.part01
+          b3324ed449599666a6ae3773b2c180a4b373c4f7a34701d73c4385fd86810956  bootstrap/archive.part02
+          5b7d23a431d6fecc3bc99d31dbff3b2d8dd73d3c094a7f7b47203b280eefea18  bootstrap/archive.tail00
+          800ccc953eb86533d10ed4f4a72816ee2730d0a5fdcac3e7231ddb9c8d05df6d  bootstrap/archive.tail01
+          a43aa588aabfe52dd56ff0bc94172b59e52dbb16811353b368da29fea670bbf3  bootstrap/archive.tail02
+          99ed66f2335ec5eddadf1cd347cb2745904657465dc0f8de4094f30af4571281  bootstrap/archive.tail03
+          77b963db829a18e79f688e5c592ff611fe768c8bffc452fd2b9730b3141d40d0  bootstrap/archive.tail04
+          e20c5d51346bad7648cc5d5c54abe056e5bd9bd9796eb419c111e11ab9b935bc  bootstrap/archive.tail05
+          9109e3bd3840026f73d6440c65e646ba0237a537d08b3105e34d6a1c05a5bee0  bootstrap/archive.tail06
+          HASHES
+          sha256sum --check /tmp/fragmentos.sha256
+
+          cat \
+            bootstrap/archive.part00 \
+            bootstrap/archive.part01 \
+            bootstrap/archive.part02 \
+            bootstrap/archive.tail00 \
+            bootstrap/archive.tail01 \
+            bootstrap/archive.tail02 \
+            bootstrap/archive.tail03 \
+            bootstrap/archive.tail04 \
+            bootstrap/archive.tail05 \
+            bootstrap/archive.tail06 \
+            > /tmp/origem-shop.tar.gz.b64
+
           test "$(wc -c < /tmp/origem-shop.tar.gz.b64)" -eq 72504
           base64 --decode /tmp/origem-shop.tar.gz.b64 > /tmp/origem-shop.tar.gz
           echo "7b1616403e4c181b555cb372f928a8bdf2d24d2dce0770ba5beed64ea163279a  /tmp/origem-shop.tar.gz" | sha256sum --check
