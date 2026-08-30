@@ -1,0 +1,62 @@
+name: Publicar base do projeto Origem
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publicar-e-validar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruir pacote
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat bootstrap/archive.part* > /tmp/origem-shop.tar.gz.b64
+          base64 --decode /tmp/origem-shop.tar.gz.b64 > /tmp/origem-shop.tar.gz
+          echo "7b1616403e4c181b555cb372f928a8bdf2d24d2dce0770ba5beed64ea163279a  /tmp/origem-shop.tar.gz" | sha256sum --check
+          tar -xzf /tmp/origem-shop.tar.gz -C .
+          rm -rf bootstrap
+          rm -f .github/workflows/bootstrap.yml
+
+      - name: Publicar aplicação
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Implementar catálogo Origem" || exit 0
+          git push origin HEAD:main
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      - name: Verificar TypeScript
+        run: npm run typecheck
+
+      - name: Verificar lint
+        run: npm run lint
+
+      - name: Gerar build de produção
+        env:
+          AUTH_SECRET: teste-de-build-origem-nao-usar-em-producao
+          TOKEN_ENCRYPTION_KEY: teste-de-build-origem-nao-usar-em-producao-32-bytes
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        run: npm run build
