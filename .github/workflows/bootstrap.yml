@@ -54,8 +54,11 @@ jobs:
           base64 --decode /tmp/origem-shop.tar.gz.b64 > /tmp/origem-shop.tar.gz
           echo "7b1616403e4c181b555cb372f928a8bdf2d24d2dce0770ba5beed64ea163279a  /tmp/origem-shop.tar.gz" | sha256sum --check
           tar -xzf /tmp/origem-shop.tar.gz -C .
+
+          # O token padrão do Actions não pode criar outro workflow. O CI será
+          # publicado em uma operação separada, depois da validação do projeto.
+          rm -f .github/workflows/ci.yml
           rm -rf bootstrap
-          rm -f .github/workflows/bootstrap.yml
 
       - name: Publicar aplicação
         shell: bash
